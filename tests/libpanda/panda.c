@@ -15,7 +15,7 @@ void can_tx_comms_resume_spi(void) { };
 #include "faults.h"
 #include "libc.h"
 #include "boards/board_declarations.h"
-#include "safety.h"
+#include "opendbc/safety/safety.h"
 #include "main_definitions.h"
 #include "drivers/can_common.h"
 
@@ -26,6 +26,3 @@ can_ring *tx3_q = &can_tx3_q;
 
 #include "comms_definitions.h"
 #include "can_comms.h"
-
-// libpanda stuff
-#include "safety_helpers.h"

@@ -33,6 +33,7 @@ export GIT_BRANCH=${env.GIT_BRANCH}
 export GIT_COMMIT=${env.GIT_COMMIT}
 export PYTHONPATH=${env.TEST_DIR}/../
 export PYTHONWARNINGS=error
+ln -sf /data/openpilot/opendbc_repo/opendbc /data/opendbc
 
 cd ${env.TEST_DIR} || true
 ${cmd}
@@ -100,12 +101,24 @@ pipeline {
 
         stage('parallel tests') {
           parallel {
+            stage('test cuatro') {
+              agent { docker { image 'ghcr.io/commaai/alpine-ssh'; args '--user=root' } }
+              steps {
+                phone_steps("panda-cuatro", [
+                  ["build", "scons -j4"],
+                  ["flash", "cd scripts/ && ./reflash_internal_panda.py"],
+                  ["flash jungle", "cd board/jungle && ./flash.py --all"],
+                  ["test", "cd tests/hitl && HW_TYPES=10 pytest -n0 --durations=0 2*.py [5-9]*.py"],
+                ])
+              }
+            }
+
             stage('test tres') {
               agent { docker { image 'ghcr.io/commaai/alpine-ssh'; args '--user=root' } }
               steps {
                 phone_steps("panda-tres", [
                   ["build", "scons -j4"],
-                  ["flash", "cd tests/ && ./reflash_internal_panda.py"],
+                  ["flash", "cd scripts/ && ./reflash_internal_panda.py"],
                   ["flash jungle", "cd board/jungle && ./flash.py --all"],
                   ["test", "cd tests/hitl && HW_TYPES=9 pytest -n0 --durations=0 2*.py [5-9]*.py"],
                 ])
@@ -117,7 +130,7 @@ pipeline {
               steps {
                 phone_steps("panda-dos", [
                   ["build", "scons -j4"],
-                  ["flash", "cd tests/ && ./reflash_internal_panda.py"],
+                  ["flash", "cd scripts/ && ./reflash_internal_panda.py"],
                   ["flash jungle", "cd board/jungle && ./flash.py --all"],
                   ["test", "cd tests/hitl && HW_TYPES=6 pytest -n0 --durations=0 [2-9]*.py -k 'not test_send_recv'"],
                 ])

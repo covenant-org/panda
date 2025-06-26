@@ -103,7 +103,7 @@ class SpiDevice:
 
     with SPI_LOCK:
       if speed not in SPI_DEVICES:
-        SPI_DEVICES[speed] = spidev.SpiDev()  # pylint: disable=c-extension-no-member
+        SPI_DEVICES[speed] = spidev.SpiDev()
         SPI_DEVICES[speed].open(0, 0)
         SPI_DEVICES[speed].max_speed_hz = speed
       self._spidev = SPI_DEVICES[speed]
@@ -402,7 +402,8 @@ class STBootloaderSPIHandle(BaseSTBootloaderHandle):
 
   def get_chip_id(self) -> int:
     r = self._cmd(0x02, read_bytes=3)
-    assert r[0] == 1  # response length - 1
+    if r[0] != 1: # response length - 1
+      raise PandaSpiException("incorrect response length")
     return ((r[1] << 8) + r[2])
 
   def go_cmd(self, address: int) -> None:
